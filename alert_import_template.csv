@@ -1,0 +1,5 @@
+title,description,type,severity,latitude,longitude,address,city,state,country,radius,tags
+"Flood Alert - Mumbai","Heavy rainfall causing urban flooding in low-lying areas","flood","high",19.0760,72.8777,"Mumbai","Mumbai","Maharashtra","India",25,"flood,mumbai,urban"
+"Landslide Warning - Kerala","Continuous heavy rainfall increasing landslide risk","landslide","critical",9.9312,76.2711,"Idukki District","Idukki","Kerala","India",30,"landslide,kerala,rainfall"
+"Severe Weather Alert - Chennai","Cyclonic winds and heavy rain expected","severe_weather","high",13.0827,80.2707,"Chennai","Chennai","Tamil Nadu","India",40,"severe-weather,cyclone,chennai"
+"Evacuation Notice - Coastal Areas","Mandatory evacuation due to storm surge","evacuation","critical",12.9716,77.5946,"Bangalore","Bangalore","Karnataka","India",35,"evacuation,storm,surge"

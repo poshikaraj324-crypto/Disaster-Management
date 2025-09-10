@@ -1,0 +1,3 @@
+title,description,type,severity,latitude,longitude,address,city,state,country,radius,tags
+"Test Flood Alert","This is a test flood alert for Mumbai","flood","high",19.0760,72.8777,"Mumbai","Mumbai","Maharashtra","India",25,"test,flood,mumbai"
+"Test Landslide Warning","This is a test landslide warning for Kerala","landslide","critical",9.9312,76.2711,"Idukki District","Idukki","Kerala","India",30,"test,landslide,kerala"

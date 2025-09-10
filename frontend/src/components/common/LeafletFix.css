@@ -1,0 +1,78 @@
+/* Leaflet CSS fixes to prevent _leaflet_pos errors */
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.leaflet-map-pane {
+  position: relative;
+}
+
+.leaflet-tile-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.leaflet-overlay-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.leaflet-shadow-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.leaflet-marker-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.leaflet-tooltip-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.leaflet-popup-pane {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* Custom div icon styles */
+.custom-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-div-icon div {
+  pointer-events: auto;
+}
+
+/* Prevent map container from being undefined */
+.leaflet-container:not(.leaflet-touch) {
+  cursor: grab;
+}
+
+.leaflet-container:not(.leaflet-touch).leaflet-dragging {
+  cursor: grabbing;
+}
+
+/* Ensure proper positioning */
+.leaflet-zoom-box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  border: 2px dashed #0078A8;
+  background: rgba(255, 255, 255, 0.5);
+  z-index: 1000;
+}
