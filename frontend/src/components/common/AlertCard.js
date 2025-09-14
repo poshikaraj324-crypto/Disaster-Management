@@ -125,7 +125,10 @@ const AlertCard = ({ alert, showActions = false, onView, onEdit, onDelete }) => 
           <div className="flex items-center space-x-1">
             <FiClock className="w-4 h-4" />
             <span>
-              {formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })}
+              {alert.createdAt && !isNaN(new Date(alert.createdAt).getTime()) 
+                ? formatDistanceToNow(new Date(alert.createdAt), { addSuffix: true })
+                : 'Recently'
+              }
             </span>
           </div>
         </div>
@@ -136,7 +139,7 @@ const AlertCard = ({ alert, showActions = false, onView, onEdit, onDelete }) => 
         </div>
       </div>
 
-      {alert.validUntil && (
+      {alert.validUntil && !isNaN(new Date(alert.validUntil).getTime()) && (
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between text-sm">
             <span className="text-gray-600 dark:text-gray-400">Valid until:</span>

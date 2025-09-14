@@ -79,9 +79,17 @@ const Alerts = () => {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Disaster Alerts
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             Stay informed about current disaster alerts and emergency situations in your area.
           </p>
+          {!loading && (
+            <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-lg">
+              <FiAlertTriangle className="h-5 w-5 mr-2" />
+              <span className="font-semibold">
+                {alerts.length} Active Alert{alerts.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
         </motion.div>
 
         {/* Filters and Controls */}

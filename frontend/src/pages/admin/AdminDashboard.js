@@ -39,38 +39,98 @@ const AdminDashboard = () => {
       setLoading(true);
       
       // Fetch alert statistics
-      const alertStatsResponse = await axios.get('/api/alerts/stats/overview');
-      if (alertStatsResponse.data.success) {
-        const alertStats = alertStatsResponse.data.data.stats;
-        setStats(prev => ({
-          ...prev,
-          totalAlerts: alertStats.totalAlerts[0]?.count || 0,
-          activeAlerts: alertStats.activeAlerts[0]?.count || 0,
-          recentAlerts: alertStats.recentAlerts[0]?.count || 0
-        }));
+      try {
+        const alertStatsResponse = await axios.get('/api/alerts/stats/overview');
+        if (alertStatsResponse.data.success) {
+          const alertStats = alertStatsResponse.data.data.stats;
+          setStats(prev => ({
+            ...prev,
+            totalAlerts: alertStats.totalAlerts[0]?.count || 0,
+            activeAlerts: alertStats.activeAlerts[0]?.count || 0,
+            recentAlerts: alertStats.recentAlerts[0]?.count || 0
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching alert stats:', error);
+        // Fallback: fetch basic alert count
+        try {
+          const alertsResponse = await axios.get('/api/alerts');
+          if (alertsResponse.data.success) {
+            const alerts = alertsResponse.data.data.alerts || [];
+            setStats(prev => ({
+              ...prev,
+              totalAlerts: alerts.length,
+              activeAlerts: alerts.filter(a => a.status === 'active').length,
+              recentAlerts: alerts.filter(a => {
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return new Date(a.createdAt) > weekAgo;
+              }).length
+            }));
+          }
+        } catch (fallbackError) {
+          console.error('Error fetching fallback alert data:', fallbackError);
+        }
       }
 
       // Fetch user statistics
-      const userStatsResponse = await axios.get('/api/users/stats/overview');
-      if (userStatsResponse.data.success) {
-        const userStats = userStatsResponse.data.data.stats;
-        setStats(prev => ({
-          ...prev,
-          totalUsers: userStats.totalUsers[0]?.count || 0
-        }));
+      try {
+        const userStatsResponse = await axios.get('/api/users/stats/overview');
+        if (userStatsResponse.data.success) {
+          const userStats = userStatsResponse.data.data.stats;
+          setStats(prev => ({
+            ...prev,
+            totalUsers: userStats.totalUsers[0]?.count || 0
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching user stats:', error);
+        // Fallback: fetch basic user count
+        try {
+          const usersResponse = await axios.get('/api/users');
+          if (usersResponse.data.success) {
+            const users = usersResponse.data.data.users || [];
+            setStats(prev => ({
+              ...prev,
+              totalUsers: users.length
+            }));
+          }
+        } catch (fallbackError) {
+          console.error('Error fetching fallback user data:', fallbackError);
+        }
       }
 
       // Fetch recent alerts
-      const alertsResponse = await axios.get('/api/alerts?limit=5&status=active');
-      if (alertsResponse.data.success) {
-        setAlerts(alertsResponse.data.data.alerts);
+      try {
+        const alertsResponse = await axios.get('/api/alerts?limit=5&status=active');
+        if (alertsResponse.data.success) {
+          setAlerts(alertsResponse.data.data.alerts);
+        }
+      } catch (error) {
+        console.error('Error fetching recent alerts:', error);
+        // Try without status filter
+        try {
+          const alertsResponse = await axios.get('/api/alerts?limit=5');
+          if (alertsResponse.data.success) {
+            setAlerts(alertsResponse.data.data.alerts);
+          }
+        } catch (fallbackError) {
+          console.error('Error fetching fallback alerts:', fallbackError);
+        }
       }
 
       // Fetch alert management status
-      const statusResponse = await axios.get('/api/alert-management/status');
-      if (statusResponse.data.success) {
-        setAlertFetcherStatus(statusResponse.data.data.alertFetcher);
-        setCronStatus(statusResponse.data.data.cronService);
+      try {
+        const statusResponse = await axios.get('/api/alert-management/status');
+        if (statusResponse.data.success) {
+          setAlertFetcherStatus(statusResponse.data.data.alertFetcher);
+          setCronStatus(statusResponse.data.data.cronService);
+        }
+      } catch (error) {
+        console.error('Error fetching alert management status:', error);
+        // Set default status
+        setAlertFetcherStatus({ weatherApiConfigured: false });
+        setCronStatus({ isRunning: false });
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -85,8 +145,10 @@ const AdminDashboard = () => {
         await axios.delete(`/api/alerts/${alertId}`);
         setAlerts(alerts.filter(alert => alert._id !== alertId));
         fetchDashboardData(); // Refresh stats
+        alert('Alert deleted successfully!');
       } catch (error) {
         console.error('Error deleting alert:', error);
+        alert('Error deleting alert: ' + (error.response?.data?.message || error.message));
       }
     }
   };
@@ -98,10 +160,12 @@ const AdminDashboard = () => {
       if (response.data.success) {
         alert('Alerts fetched successfully!');
         fetchDashboardData(); // Refresh data
+      } else {
+        alert('Failed to fetch alerts: ' + (response.data.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error fetching alerts:', error);
-      alert('Error fetching alerts: ' + error.response?.data?.message || error.message);
+      alert('Error fetching alerts: ' + (error.response?.data?.message || error.message));
     } finally {
       setIsFetching(false);
     }
@@ -121,9 +185,10 @@ const AdminDashboard = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+      alert('Alerts exported successfully!');
     } catch (error) {
       console.error('Error exporting alerts:', error);
-      alert('Error exporting alerts: ' + error.response?.data?.message || error.message);
+      alert('Error exporting alerts: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -144,11 +209,16 @@ const AdminDashboard = () => {
       if (response.data.success) {
         alert(`Successfully imported ${response.data.data.imported} alerts!`);
         fetchDashboardData(); // Refresh data
+      } else {
+        alert('Failed to import alerts: ' + (response.data.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('Error importing alerts:', error);
-      alert('Error importing alerts: ' + error.response?.data?.message || error.message);
+      alert('Error importing alerts: ' + (error.response?.data?.message || error.message));
     }
+    
+    // Reset file input
+    event.target.value = '';
   };
 
   if (loading) {

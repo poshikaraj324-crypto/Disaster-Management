@@ -348,7 +348,12 @@ const Dashboard = () => {
                             )}
                             <div className="flex justify-between">
                               <span>Updated:</span>
-                              <span>{new Date(alert.createdAt).toLocaleDateString()}</span>
+                              <span>
+                                {alert.createdAt && !isNaN(new Date(alert.createdAt).getTime()) 
+                                  ? new Date(alert.createdAt).toLocaleDateString()
+                                  : 'Recently'
+                                }
+                              </span>
                             </div>
                           </div>
                           <div className="mt-3 pt-2 border-t border-gray-200 dark:border-gray-700">
@@ -436,7 +441,10 @@ const Dashboard = () => {
                       </span>
                       <span className="text-xs text-gray-500">
                         <FiClock className="w-3 h-3 inline mr-1" />
-                        {new Date(alert.createdAt).toLocaleDateString()}
+                        {alert.createdAt && !isNaN(new Date(alert.createdAt).getTime()) 
+                          ? new Date(alert.createdAt).toLocaleDateString()
+                          : 'Recently'
+                        }
                       </span>
                     </div>
                   </div>

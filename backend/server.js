@@ -30,13 +30,13 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/disaster_management', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+// MongoDB connection mongodb+srv://kkkkk:12345@cluster0.qbcvzb6.mongodb.net/kk?retryWrites=true&w=majority&appName=Cluster0
+mongoose.connect(
+  'mongodb+srv://kkkkk:12345@cluster0.qbcvzb6.mongodb.net/kk?retryWrites=true&w=majority&appName=Cluster0',
+  { useNewUrlParser: true, useUnifiedTopology: true }
+)
+.then(() => console.log('✅ MongoDB connected'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -69,7 +69,7 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 
 // Initialize cron service
 const cronService = new CronService();
@@ -92,11 +92,14 @@ process.on('SIGTERM', () => {
   });
 });
 
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
   console.log('SIGINT received, shutting down gracefully');
   cronService.stop();
-  mongoose.connection.close(() => {
+  try {
+    await mongoose.disconnect();
     console.log('MongoDB connection closed');
-    process.exit(0);
-  });
+  } catch (error) {
+    console.error('Error closing MongoDB connection:', error);
+  }
+  process.exit(0);
 });

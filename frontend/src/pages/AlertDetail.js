@@ -178,8 +178,10 @@ const AlertDetail = () => {
                   <div className="flex items-center space-x-1">
                     <FiClock className="w-4 h-4" />
                     <span>
-                      {new Date(alert.createdAt).toLocaleDateString()} at{' '}
-                      {new Date(alert.createdAt).toLocaleTimeString()}
+                      {alert.createdAt && !isNaN(new Date(alert.createdAt).getTime()) 
+                        ? `${new Date(alert.createdAt).toLocaleDateString()} at ${new Date(alert.createdAt).toLocaleTimeString()}`
+                        : 'Recently'
+                      }
                     </span>
                   </div>
                   <div className="flex items-center space-x-1">
@@ -331,13 +333,19 @@ const AlertDetail = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Valid Until</span>
                   <span className="font-medium">
-                    {new Date(alert.validUntil).toLocaleDateString()}
+                    {alert.validUntil && !isNaN(new Date(alert.validUntil).getTime()) 
+                      ? new Date(alert.validUntil).toLocaleDateString()
+                      : 'Not specified'
+                    }
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Created</span>
                   <span className="font-medium">
-                    {new Date(alert.createdAt).toLocaleDateString()}
+                    {alert.createdAt && !isNaN(new Date(alert.createdAt).getTime()) 
+                      ? new Date(alert.createdAt).toLocaleDateString()
+                      : 'Recently'
+                    }
                   </span>
                 </div>
               </div>
@@ -396,7 +404,10 @@ const AlertDetail = () => {
                             {relatedAlert.severity}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {new Date(relatedAlert.createdAt).toLocaleDateString()}
+                            {relatedAlert.createdAt && !isNaN(new Date(relatedAlert.createdAt).getTime()) 
+                              ? new Date(relatedAlert.createdAt).toLocaleDateString()
+                              : 'Recently'
+                            }
                           </span>
                         </div>
                       </Link>
