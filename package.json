@@ -10,10 +10,24 @@
     "build": "cd frontend && npm run build",
     "install-all": "npm install && cd backend && npm install && cd ../frontend && npm install"
   },
-  "keywords": ["disaster", "management", "alerts", "landslides", "floods"],
+  "keywords": [
+    "disaster",
+    "management",
+    "alerts",
+    "landslides",
+    "floods"
+  ],
   "author": "Disaster Management Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/poshikaraj324-crypto/Disaster-Management.git"
+  },
+  "bugs": {
+    "url": "https://github.com/poshikaraj324-crypto/Disaster-Management/issues"
+  },
+  "homepage": "https://github.com/poshikaraj324-crypto/Disaster-Management#readme"
 }

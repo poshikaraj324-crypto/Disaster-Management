@@ -27,14 +27,19 @@ router.get('/', optionalAuth, async (req, res) => {
     
     if (type) filter.type = type;
     if (severity) filter.severity = severity;
-    if (status) filter.status = status;
-
-    // Add date filter for active alerts
+    
+    // --- CHANGE HERE: ---
+    // The logic is modified to prioritize the date for 'active' status,
+    // instead of relying on the 'status' field in the database.
     if (status === 'active') {
       const now = new Date();
       filter.validFrom = { $lte: now };
       filter.validUntil = { $gte: now };
+    } else if (status) {
+      // For any other status (e.g., 'expired'), we filter by the field directly.
+      filter.status = status;
     }
+    // --- END OF CHANGE ---
 
     // Build query
     let query = Alert.find(filter)
@@ -248,7 +253,7 @@ router.get('/location/:lat/:lng', optionalAuth, async (req, res) => {
 
     const filter = {
       isPublic: true,
-      status: 'active',
+      // --- CHANGE HERE: Removed `status: 'active'` to rely on the date check below ---
       location: {
         $geoWithin: {
           $centerSphere: [[longitude, latitude], searchRadius]
@@ -257,6 +262,7 @@ router.get('/location/:lat/:lng', optionalAuth, async (req, res) => {
       validFrom: { $lte: new Date() },
       validUntil: { $gte: new Date() }
     };
+    // --- END OF CHANGE ---
 
     if (type) filter.type = type;
     if (severity) filter.severity = severity;
@@ -325,7 +331,7 @@ router.get('/nearby', protect, async (req, res) => {
 
     const filter = {
       isPublic: true,
-      status: 'active',
+      // --- CHANGE HERE: Removed `status: 'active'` to rely on the date check below ---
       location: {
         $geoWithin: {
           $centerSphere: [[longitude, latitude], radiusInRadians]
@@ -334,6 +340,7 @@ router.get('/nearby', protect, async (req, res) => {
       validFrom: { $lte: new Date() },
       validUntil: { $gte: new Date() }
     };
+    // --- END OF CHANGE ---
 
     const alerts = await Alert.find(filter)
       .populate('createdBy', 'name email')
@@ -398,7 +405,7 @@ router.get('/stats/overview', protect, authorize('admin'), async (req, res) => {
           activeAlerts: [
             {
               $match: {
-                status: 'active',
+                // --- CHANGE HERE: Removed `status: 'active'` to rely on the date check ---
                 validFrom: { $lte: now },
                 validUntil: { $gte: now }
               }
