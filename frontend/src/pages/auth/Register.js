@@ -150,7 +150,7 @@ const Register = () => {
             {/* Phone Field */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Phone Number (Optional)
+                Phone Number
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -258,7 +258,7 @@ const Register = () => {
               <div className="flex items-center space-x-2">
                 <FiMapPin className="h-5 w-5 text-gray-400" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Location (Optional - helps with local alerts)
+                  Location 
                 </span>
               </div>
               
