@@ -2,6 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from './contexts/AuthContext';
+// --- ADD THIS LINE ---
+import { Toaster } from 'react-hot-toast';
 
 // Components
 import Navbar from './components/layout/Navbar';
@@ -64,6 +66,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* --- AND ADD THIS COMPONENT --- */}
+      <Toaster position="top-center" reverseOrder={false} />
+
       <Helmet>
         <title>Disaster Management System</title>
         <meta name="description" content="Comprehensive disaster management and alert system for landslides and floods" />

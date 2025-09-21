@@ -15,11 +15,7 @@ const initialState = {
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'AUTH_START':
-      return {
-        ...state,
-        loading: true,
-        error: null
-      };
+      return { ...state, loading: true, error: null };
     case 'AUTH_SUCCESS':
       return {
         ...state,
@@ -30,6 +26,7 @@ const authReducer = (state, action) => {
         error: null
       };
     case 'AUTH_FAILURE':
+      localStorage.removeItem('token'); // Ensure token is cleared on failure
       return {
         ...state,
         user: null,
@@ -39,6 +36,7 @@ const authReducer = (state, action) => {
         error: action.payload
       };
     case 'LOGOUT':
+      localStorage.removeItem('token'); // Ensure token is cleared on logout
       return {
         ...state,
         user: null,
@@ -48,15 +46,9 @@ const authReducer = (state, action) => {
         error: null
       };
     case 'UPDATE_USER':
-      return {
-        ...state,
-        user: { ...state.user, ...action.payload }
-      };
+      return { ...state, user: { ...state.user, ...action.payload } };
     case 'CLEAR_ERROR':
-      return {
-        ...state,
-        error: null
-      };
+      return { ...state, error: null };
     default:
       return state;
   }
@@ -65,52 +57,43 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Set up axios interceptor for token
-  useEffect(() => {
-    if (state.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${state.token}`;
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-    }
-  }, [state.token]);
-
-  // Check if user is logged in on app start
   useEffect(() => {
     const checkAuth = async () => {
-      if (state.token) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         try {
           const response = await axios.get('/api/auth/me');
-          dispatch({
-            type: 'AUTH_SUCCESS',
-            payload: {
-              user: response.data.data.user,
-              token: state.token
-            }
-          });
+          if (response.data.success) {
+            dispatch({
+              type: 'AUTH_SUCCESS',
+              payload: {
+                user: response.data.data, // Corrected payload
+                token: token
+              }
+            });
+          } else {
+             dispatch({ type: 'AUTH_FAILURE', payload: 'Session invalid' });
+          }
         } catch (error) {
-          localStorage.removeItem('token');
           dispatch({ type: 'AUTH_FAILURE', payload: 'Session expired' });
         }
       } else {
         dispatch({ type: 'AUTH_FAILURE', payload: null });
       }
     };
-
     checkAuth();
   }, []);
 
   const login = async (email, password) => {
     dispatch({ type: 'AUTH_START' });
-    
     try {
       const response = await axios.post('/api/auth/login', { email, password });
       const { user, token } = response.data.data;
       
       localStorage.setItem('token', token);
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token }
-      });
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`; // Set header immediately
+      dispatch({ type: 'AUTH_SUCCESS', payload: { user, token } });
       
       toast.success('Login successful!');
       return { success: true };
@@ -124,19 +107,16 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     dispatch({ type: 'AUTH_START' });
-    
     try {
+      // --- IMPORTANT FIX: Registration now automatically logs the user in ---
       const response = await axios.post('/api/auth/register', userData);
-      const { user, token } = response.data.data;
-      
-      localStorage.setItem('token', token);
-      dispatch({
-        type: 'AUTH_SUCCESS',
-        payload: { user, token }
-      });
-      
-      toast.success('Registration successful!');
-      return { success: true };
+      if (response.data.success) {
+        toast.success('Registration successful! Logging you in...');
+        // After successful registration, call the login function to create a session
+        return await login(userData.email, userData.password);
+      }
+       // This part should ideally not be reached if the backend is consistent
+       return { success: false, error: "An unknown error occurred." };
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
       dispatch({ type: 'AUTH_FAILURE', payload: message });
@@ -146,45 +126,47 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization']; // Clear header on logout
     dispatch({ type: 'LOGOUT' });
     toast.success('Logged out successfully');
   };
 
-  const updateProfile = async (profileData) => {
-    try {
-      const response = await axios.put('/api/auth/profile', profileData);
-      dispatch({
-        type: 'UPDATE_USER',
-        payload: response.data.data.user
-      });
-      toast.success('Profile updated successfully');
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Profile update failed';
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
+  // ... (updateProfile, changePassword, etc. remain the same)
+    const updateProfile = async (profileData) => {
+    try {
+      const response = await axios.put('/api/auth/profile', profileData);
+      dispatch({
+        type: 'UPDATE_USER',
+        payload: response.data.data.user
+      });
+      toast.success('Profile updated successfully');
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Profile update failed';
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
 
-  const changePassword = async (currentPassword, newPassword) => {
-    try {
-      await axios.put('/api/auth/change-password', {
-        currentPassword,
-        newPassword
-      });
-      toast.success('Password changed successfully');
-      return { success: true };
-    } catch (error) {
-      const message = error.response?.data?.message || 'Password change failed';
-      toast.error(message);
-      return { success: false, error: message };
-    }
-  };
+  const changePassword = async (currentPassword, newPassword) => {
+    try {
+      await axios.put('/api/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+      toast.success('Password changed successfully');
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || 'Password change failed';
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  };
 
-  const clearError = () => {
-    dispatch({ type: 'CLEAR_ERROR' });
-  };
+  const clearError = () => {
+    dispatch({ type: 'CLEAR_ERROR' });
+  };
+
 
   const value = {
     ...state,
@@ -198,7 +180,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!state.loading && children}
     </AuthContext.Provider>
   );
 };
@@ -210,3 +192,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

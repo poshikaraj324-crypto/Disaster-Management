@@ -1,30 +1,31 @@
 import axios from 'axios';
 
-// Set the base URL for all API calls
-axios.defaults.baseURL = 'http://localhost:8000';
+// This new logic correctly determines the backend URL.
+// It uses your live Render URL in production and localhost for local testing.
+const baseURL = process.env.NODE_ENV === 'production'
+  ? process.env.REACT_APP_API_URL
+  : 'http://localhost:8000';
 
-// Add request interceptor for logging
-axios.interceptors.request.use(
+const instance = axios.create({
+  baseURL: baseURL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// This part automatically adds the user's token to every API call after they log in
+instance.interceptors.request.use(
   (config) => {
-    console.log(`Making ${config.method?.toUpperCase()} request to: ${config.url}`);
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor for error handling
-axios.interceptors.response.use(
-  (response) => {
-    console.log(`Response from ${response.config.url}:`, response.status);
-    return response;
-  },
-  (error) => {
-    console.error('Response error:', error.response?.status, error.response?.data);
-    return Promise.reject(error);
-  }
-);
+export default instance;
 
-export default axios;
